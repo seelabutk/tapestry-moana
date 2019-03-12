@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+    <head>
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="mobile-web-app-capable" content="yes">
+        <title>Tapestry</title>
+        <link rel="stylesheet" href="/static/css/style.css">
+        <style>.hyperimage { touch-action: none; }</style>
+	<style>body { background-color: #999; }</style>
+
+        <!-- jQuery dependency -->
+        <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+        <!-- For testing -->
+        <script src="/static/js/smooth.js"></script>
+        <script src="/static/js/gremlins.min.js"></script>
+        <script src="/static/js/testing.js"></script>
+
+        <!-- Core Tapestry JS -->
+        <script src="/static/js/tools.js"></script>
+        <script src="/static/js/sylvester.js"></script>
+        <script src="/static/js/math.js"></script>
+        <script src="/static/js/arcball.js"></script>
+        <script src="/static/js/tapestry.js"></script>
+
+        <!-- For minified version -->
+        <!-- <script src="js/tapestry.min.js></script> -->
+        <script>
+            $(document).ready(function(){
+				function getParameterByName(name, url) {
+					if (!url) url = window.location.href;
+					name = name.replace(/[\[\]]/g, "\\$&");
+					var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+						results = regex.exec(url);
+					if (!results) return null;
+					if (!results[2]) return '';
+					return decodeURIComponent(results[2].replace(/\+/g, " "));
+				}
+
+                $(".hyperimage").attr("data-dataset", getParameterByName("dataset") || 'supernova');
+		var n_tiles = 2,
+		      image_size = 9,
+		      n_tiles_real = Math.pow(n_tiles, 2),
+		      size_real = Math.pow(2, image_size);
+		document.getElementById('heading').innerText = n_tiles_real + ' tiles - ' + size_real + ' size';
+                $(".hyperimage").tapestry({
+                    //host: 'http://accona.eecs.utk.edu:8010',
+                    //host: 'http://accona.eecs.utk.edu:8860',
+		    //host: 'http://18.191.74.180:9011',
+                    //host: new Array(2).fill(0).map((d, i) => `http://${i}.18.188.154.14.nip.io:9011`),
+                    //host: new Array(2).fill(0).map((d, i) => `http://${i}.18.188.154.14.nip.io:9011`),
+                    //host: ["http://accona.eecs.utk.edu:7000", "http://sinai.eecs.utk.edu:7000", "http://kavir.eecs.utk.edu:7000"],
+                    n_tiles: n_tiles_real,
+                    low_res: 256, //Math.max(n_tiles_real, 128),
+                    width: size_real,
+                    height: size_real,
+		    zoom: 512,
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1 id="heading"></h1>
+        <div class="hyperimage" id="dataset"></div>
+    </body>
+</html>

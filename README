@@ -1,0 +1,131 @@
+===================
+Tapestry Moana Demo
+===================
+
+This project includes the changes needed to get the Moana demo to run under a
+Tapestry web server architecture.
+
+
+Prerequisites
+-------------
+
+In the local directory should be 3 files:
+
+- embree-3.5.0.x86_64.linux.tar.gz
+- ispc-v1.9.1-linux.tar.gz
+- moana-ospray-demo.tgz
+
+The rest of the files are included with the repository:
+
+- server/
+- 1/
+- 2/
+- Dockerfile
+- go.sh
+
+Additionally, it's helpful to have the existing source code for comparison:
+
+- _
+
+
+Project Structure
+-----------------
+
+The 1/ and 2/ directories include changes to files in the base archive. These
+are numbered so that subsequent Docker builds are a little faster. In
+particular, the way we build is:
+
+1. Install dependencies
+2. Build the given source code
+3. Build changes from the 1/ directory.
+4. Build changes from the 2/ directory.
+5. Copy remaining code that doesn't need to build.
+
+The 1/ directory changes the Camera.h scene graph file to include imageStart
+and imageEnd children so they can be modified by the Moana OSPApp.
+
+The 2/ directory changes ospMoanaViewer.cpp and modifies it into a stdin-stdout
+program. Rendering requests come via stdin in a simplified format
+(space-delimited floats and integers) and responses are written out in
+netstring format (length of data, a colon, the data, and a comma). This is so
+that we don't need to manage the HTTP server in C/C++ and can use Python as an
+HTTP server.
+
+The server/ directory contains the Python HTTP wrapper server. It listens for
+requests in the Tapestry format (example below), encodes this in the simplified
+format, sends it to the ospMoanaViewer subprocess, waits for a response, and
+sends it to the client. It also listens for static file requests to send the
+demo HTML page and the Tapestry client-side JavaScript library. The URLs are in
+the following format::
+
+  /image/:scene/:x/:y/:z/:ux/:uy/:uz/:vx/:vy/:vz/:quality/tiling,:index-:numtiles
+
+  /image/island/1.0/2.0/4.0/0.0/1.0/0.0/-1.0/-2.0/-4.0/256/tiling,1-4
+
+The former is the format used, the latter is an example using that format. It
+stands for:
+
+- I want to use the island scene (note: currently :scene is ignored, but this
+  is what it will do)
+
+- I want to the camera at position <1.0, 2.0, 4.0> in world space.
+
+- I want the camera's up vector to be <0.0, 1.0, 0.0>
+
+- I want the camera's view vector to be <-1.0, -2.0, -4.0> (i.e. towards the
+  origin in this example, but it can be anything)
+
+- I want the returned image to be 256x256 pixels large
+
+- I want the 2nd (0-indexed) tile if we split the image into 4 equal pieces.
+  The :numtiles should be a power of 2, so 1, 4, 8, etc are good values.
+
+
+The HTTP response will be in JPEG format. If a particular tile is requested,
+they can be stitchlessly combined to make the full image (already handled by
+Tapestry client-side code).
+
+
+Usage
+-----
+
+To build the server, use the convenience script `go.sh`. In particular::
+
+  $ # Build the docker image
+  $ ./go.sh build
+
+  $ # Edit the data= line
+  $ vi go.sh
+
+  $ # Run the docker image
+  $ ./go.sh run python3.7 -u server.py --port 8861 ./kava.sh
+
+Connect to the server on the given port, for instance: http://localhost:8861/
+
+
+Docker Swarm
+------------
+
+To set up a Docker Swarm service (i.e. to use multiple servers), you can use::
+
+  $ # Edit the registry= line to point to your Docker registry
+  $ vi go.sh
+
+  $ # Push your image to the registry
+  $ ./go.sh push
+
+  $ # Create your service
+  $ ./go.sh create
+
+  $ # Test it here, http://localhost:8860/
+
+  $ # Scale up your service
+  $ ./go.sh scale 10
+
+  $ # Test again
+
+  $ # Check logs
+  $ ./go.sh logs
+
+  $ # Destroy the service
+  $ ./go.sh destroy
