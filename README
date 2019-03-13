@@ -78,8 +78,8 @@ stands for:
 - I want the returned image to be 256x256 pixels large
 
 - I want the 2nd (0-indexed) tile if we split the image into 4 equal pieces.
-  The :numtiles should be a power of 2, so 1, 4, 8, etc are good values.
-
+  The :numtiles should be in the form x^2, so 1, 4, 9, and 16 are good. We
+  typically use 4 because this works well in browsers.
 
 The HTTP response will be in JPEG format. If a particular tile is requested,
 they can be stitchlessly combined to make the full image (already handled by
