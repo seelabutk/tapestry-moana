@@ -118,7 +118,7 @@ namespace ospray {
 #ifdef OSPRAY_APPS_ENABLE_DENOISER
       oidn::DeviceRef dev = oidn::newDevice();
       oidn::FilterRef filter = dev.newFilter("RT");
-      filter.set("hrd", true);
+      filter.set("hdr", true);
       std::vector<vec4f> output;
 #endif
 
