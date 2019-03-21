@@ -1,11 +1,12 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 tag=moana:$USER
 xauth=/tmp/.docker.xauth.$USER
 data=/mnt/seenas2/data/moana
-port=8860
+port=8861
 registry=accona.eecs.utk.edu:5000
 name=moana_service
+global=1
 
 build() {
 	docker build -t $tag .
@@ -25,7 +26,12 @@ push() {
 }
 
 create() {
-	docker service create --name $name -p $port:$port --mount type=bind,src=$data,dst=$data $registry/$tag python3.7 -u server.py --port $port
+	docker service create \
+		--name $name \
+		-p $port:$port \
+		${global:+--mode global} \
+		--mount type=bind,src=$data,dst=$data \
+		$registry/$tag python3.7 -u server.py --port $port "$@"
 }
 
 destroy() {
@@ -67,6 +73,10 @@ checkout() {
 
 	mkdir -p new
 	tar cf - -C _ "${f#*/}" | tar xf - -C new
+}
+
+server.py() {
+	run python3.7 -u server.py --port $port "$@"
 }
 
 "$@"

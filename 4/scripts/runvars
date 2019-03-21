@@ -1,0 +1,49 @@
+#ulimit -n 5200
+
+export DEMO_ROOT=${PWD}
+
+export ISLAND=${DEMO_ROOT}/island
+export BIFFS=${DEMO_ROOT}/biffs
+export LIGHTS=${DEMO_ROOT}/lights
+
+export OSPRAY_PTEX_BASE_DIR=${ISLAND}
+
+SRC=${DEMO_ROOT}/source
+export LD_LIBRARY_PATH=${SRC}/ospray/build:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${SRC}/oidn/release/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${SRC}/ptex/install/lib:${LD_LIBRARY_PATH}
+
+export COMMON="${COMMON} -sg:frameAccumulationLimit=256"
+export COMMON="${COMMON} --osp:module:biff"
+export COMMON="${COMMON} --osp:module:ptex"
+export COMMON="${COMMON} -r pathtracer"
+export COMMON="${COMMON} -sg:UseGeometryLights=false"
+# Optionally disable OpenImageDenoise (on by default)
+#export COMMON="${COMMON} -sg:frameBuffer:useDenoiser=false -sg:navFrameBuffer:useDenoiser=false"
+
+#export COMMON="${COMMON} -hd"
+export COMMON="${COMMON} -w 1536 -h 644"
+export COMMON="${COMMON} --no-lights --no-plane"
+export COMMON="${COMMON} -sg:lights+=sun,DirectionalLight -sg:sun:direction=-0.4,-0.1,-0.9 -sg:sun:color=1.0,0.568,0.173 -sg:sun:angularDiameter=0.53 -sg:sun:intensity=6.0"
+
+# islandsunVIS.png is not really HDR... (explained usage in README.pdf)
+#export COMMON="${COMMON} --hdri-light ${ISLAND}/textures/islandsun.exr"
+export COMMON="${COMMON} --hdri-light ${ISLAND}/textures/islandsunVIS.png"
+export COMMON="${COMMON} -sg:hdri:dir=3,0,6.43"
+export COMMON="${COMMON} -sg:useBackplate=false"
+
+# For MPI, need to edit these hostnames
+export MPI_HOST_LIST="-host=frontend,sdvis01,sdvis02,sdvis03,sdvis04,sdvis05,sdvis06,sdvis07"
+export MPI_ARGS="mpirun -l -genv I_MPI_FABRICS=shm:ofi -n 8 -ppn 1 ${MPI_HOST_LIST}"
+export OSPRAY_MPI_OFFLOAD_WRITE_BUFFER_SCALE=1024
+
+#export OSP=./ospExampleViewer
+#export OSP="${MPI_ARGS} ./ospExampleViewer --osp:mpi"
+
+export OSP=./ospMoanaViewer
+#export OSP="${MPI_ARGS} ./ospMoanaViewer --osp:mpi"
+
+# Lights definition files
+export COMMON="${COMMON} --lights-file ${LIGHTS}/lights.xml"
+export COMMON="${COMMON} --lights-file ${LIGHTS}/lights-sunset.xml"
+

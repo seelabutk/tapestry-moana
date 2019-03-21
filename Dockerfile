@@ -36,8 +36,8 @@ RUN mv embree-3.5.0.x86_64.linux embree
 WORKDIR /opt/embree/
 
 WORKDIR /app/
-COPY moana-ospray-demo.tgz /tmp/
-RUN tar xf /tmp/moana-ospray-demo.tgz --strip-components 2
+COPY moana-ospray-demo-v1.2.tgz /tmp/
+RUN tar xf /tmp/moana-ospray-demo-v1.2.tgz --strip-components 2
 
 WORKDIR /app/source
 RUN bash ./README.sh
@@ -50,6 +50,15 @@ WORKDIR /src/
 COPY 2 2
 RUN cp -rv 2/* /app/ && chown root:root -R /app && rm -rf 2 && cd /app/source && bash ./README.sh
 
+WORKDIR /src/
+COPY 3 3
+RUN cp -rv 3/* /app/ && chown root:root -R /app && rm -rf 3 && cd /app/source && bash ./README.sh
+
+WORKDIR /src/
+COPY 4 4
+RUN cp -rv 4/* /app/ && chown root:root -R /app && rm -rf 4 && cd /app/source && bash ./README.sh
+
 WORKDIR /app/
-RUN ln -sf /mnt/seenas2/data/moana/island island
+RUN ln -sf /mnt/seenas2/data/moana/island island && \
+    ln -sf /mnt/seenas2/data/moana /fast
 COPY server .

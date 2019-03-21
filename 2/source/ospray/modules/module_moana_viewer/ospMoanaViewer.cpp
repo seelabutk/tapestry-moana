@@ -164,16 +164,16 @@ namespace ospray {
         root->setChild("frameBuffer", fb);
         root->setChild("navFrameBuffer", fb);
         std::shared_ptr<sg::FrameBuffer> foo = root->renderFrame(true);
-        uint32_t *pixels = (uint32_t *)foo->map();
+        float *pixels = (float *)foo->map();
   
         unsigned char *buffer = (unsigned char *)malloc(4 * w * h);
         for (int j=0; j<h; ++j) {
-          unsigned char *rowIn = (unsigned char *)&pixels[(h-1-j)*w];
+          float *rowIn = (float *)&pixels[4*(h-1-j)*w];
           for (int i=0; i<w; ++i) {
             int index = j * w + i;
-            buffer[4*index+0] = rowIn[4*i+0];
-            buffer[4*index+1] = rowIn[4*i+1];
-            buffer[4*index+2] = rowIn[4*i+2];
+            buffer[4*index+0] = (unsigned char)(rowIn[4*i+0] * 255.0f);
+            buffer[4*index+1] = (unsigned char)(rowIn[4*i+1] * 255.0f);
+            buffer[4*index+2] = (unsigned char)(rowIn[4*i+2] * 255.0f);
             buffer[4*index+3] = 255;
           }
         }
