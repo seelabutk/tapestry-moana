@@ -30,6 +30,10 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "sg/3rdParty/stb_image_write.h"
 
+#ifdef OSPRAY_APPS_ENABLE_DENOISER
+#include <OpenImageDenoise/oidn.hpp>
+#endif
+
 #include <cstdio>
 
 namespace ospray {
@@ -111,6 +115,13 @@ namespace ospray {
 
     void OSPMoanaViewer::render(const std::shared_ptr<sg::Frame> &root)
     {
+#ifdef OSPRAY_APPS_ENABLE_DENOISER
+      oidn::DeviceRef dev = oidn::newDevice();
+      oidn::FilterRef filter = dev.newFilter("RT");
+      filter.set("hrd", true);
+      std::vector<vec4f> output;
+#endif
+
       auto &camera = root->child("camera");
 
       default_vp    = camera["pos"].valueAs<vec3f>();
@@ -142,29 +153,103 @@ namespace ospray {
           printf("oof %d\n", rv);
         }
 
-	int w = quality;
-	int h = quality;
-	int tile_x = tile_index % n_cols;
-	int tile_y = tile_index / n_cols;
+        int w = quality;
+        int h = quality;
+        int tile_x = tile_index % n_cols;
+        int tile_y = tile_index / n_cols;
   
         camera["pos"] = vec3f(x, y, z);
-	camera["up"] = vec3f(ux, uy, uz);
-	camera["dir"] = vec3f(vx, vy, vz);
-	camera["imageEnd"] = vec2f(
-		/* right */ ((float)tile_x + 1) / n_cols,
-		/* top */ ((float)n_cols - tile_y) / n_cols
-	);
-	camera["imageStart"] = vec2f(
-		/* left */ ((float)tile_x) / n_cols,
-		/* bottom */ ((float)n_cols - tile_y - 1) / n_cols
-	);
-	camera.commit();
+        camera["up"] = vec3f(ux, uy, uz);
+        camera["dir"] = vec3f(vx, vy, vz);
+        camera["imageEnd"] = vec2f(
+          /* right */ ((float)tile_x + 1) / n_cols,
+          /* top */ ((float)n_cols - tile_y) / n_cols
+        );
+        camera["imageStart"] = vec2f(
+          /* left */ ((float)tile_x) / n_cols,
+          /* bottom */ ((float)n_cols - tile_y - 1) / n_cols
+        );
+        camera.commit();
 
         std::shared_ptr<sg::FrameBuffer> fb = std::make_shared<sg::FrameBuffer>(vec2i(w, h));
+        fb->operator[]("useDenoiser") = true;
         root->setChild("frameBuffer", fb);
         root->setChild("navFrameBuffer", fb);
         std::shared_ptr<sg::FrameBuffer> foo = root->renderFrame(true);
+
+#ifdef OSPRAY_APPS_ENABLE_DENOISER
+        {
+          const char *name = "color";
+          void *ptr = (void *)foo->map(OSP_FB_COLOR);
+          oidn::Format format = oidn::Format::Float3;
+          size_t width = w;
+          size_t height = h;
+          size_t byteOffset = 0;
+          size_t bytePixelStride = sizeof(vec4f);
+          size_t byteRowStride = w * bytePixelStride;
+          filter.setImage(name, ptr, format, width, height, byteOffset, bytePixelStride, byteRowStride);
+          foo->unmap(ptr);
+        }
+
+        {
+          const char *name = "normal";
+          void *ptr = (void *)foo->map(OSP_FB_NORMAL);
+          oidn::Format format = oidn::Format::Float3;
+          size_t width = w;
+          size_t height = h;
+          size_t byteOffset = 0;
+          size_t bytePixelStride = sizeof(vec3f);
+          size_t byteRowStride = w * bytePixelStride;
+          filter.setImage(name, ptr, format, width, height, byteOffset, bytePixelStride, byteRowStride);
+          foo->unmap(ptr);
+        }
+
+        {
+          const char *name = "albedo";
+          void *ptr = (void *)foo->map(OSP_FB_ALBEDO);
+          oidn::Format format = oidn::Format::Float3;
+          size_t width = w;
+          size_t height = h;
+          size_t byteOffset = 0;
+          size_t bytePixelStride = sizeof(vec3f);
+          size_t byteRowStride = w * bytePixelStride;
+          filter.setImage(name, ptr, format, width, height, byteOffset, bytePixelStride, byteRowStride);
+          foo->unmap(ptr);
+        }
+
+        {
+          const char *name = "output";
+          output.resize(w * h);
+          void *ptr = output.data();
+          oidn::Format format = oidn::Format::Float3;
+          size_t width = w;
+          size_t height = h;
+          size_t byteOffset = 0;
+          size_t bytePixelStride = sizeof(vec4f);
+          size_t byteRowStride = w * bytePixelStride;
+          filter.setImage(name, ptr, format, width, height, byteOffset, bytePixelStride, byteRowStride);
+        }
+
+        filter.commit();
+        filter.execute();
+        float *pixels = (float *)output.data();
+        //float *pixels = (float *)foo->map();
+//        float *pixels = (float *)malloc(4 * w * h * sizeof(float));
+//        {
+//          const void *ptr = foo->map(OSP_FB_NORMAL);
+//          const float *input = (float *)ptr;
+//          for (int i=0; i<h; ++i)
+//          for (int j=0; j<w; ++j) {
+//            pixels[4*j+4*w*i+0] = input[3*j+3*w*i+0];
+//            pixels[4*j+4*w*i+1] = input[3*j+3*w*i+1];
+//            pixels[4*j+4*w*i+2] = input[3*j+3*w*i+2];
+//            pixels[4*j+4*w*i+3] = 255.0f;
+//          }
+//          foo->unmap(ptr);
+//        }
+#else
         float *pixels = (float *)foo->map();
+#endif
   
         unsigned char *buffer = (unsigned char *)malloc(4 * w * h);
         for (int j=0; j<h; ++j) {
@@ -177,8 +262,11 @@ namespace ospray {
             buffer[4*index+3] = 255;
           }
         }
-        
-	foo->unmap(pixels);
+
+#ifdef OSPRAY_APPS_ENABLE_DENOISER
+#else
+        foo->unmap(pixels);
+#endif
   
         Foo myfoo;
         int ret = stbi_write_jpg_to_func(write, (void*)&myfoo, w, h, 4, buffer, 100);
@@ -186,9 +274,9 @@ namespace ospray {
           printf("bad\n");
         }
         
-	fprintf(f, "%lu:", myfoo.bytes.size());
+        fprintf(f, "%lu:", myfoo.bytes.size());
         fwrite(myfoo.bytes.data(), 1, myfoo.bytes.size(), f);
-	fprintf(f, ",");
+        fprintf(f, ",");
         fflush(f);
       }
 
