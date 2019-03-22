@@ -1,21 +1,26 @@
 #!/usr/bin/env bash
 
-tag=moana:$USER
+tag=tapestry-moana-demo:$USER
 xauth=/tmp/.docker.xauth.$USER
-data=/mnt/seenas2/data/moana
+data=/home/ahota/data/disney/moana
 out=$PWD/out
 port=8861
-registry=accona.eecs.utk.edu:5000
+registry=356377581652.dkr.ecr.us-east-2.amazonaws.com
 name=moana_service
 global=1
 
 build() {
-	docker build -t $tag .
+	docker build \
+               --build-arg http_proxy=http://proxy-us.intel.com:911 \
+               --build-arg https_proxy=http://proxy-us.intel.com:912 \
+               -t $tag .
 }
 
 run() {
 	mkdir -p $out
 	docker run \
+                -e http_proxy=http://proxy-us.intel.com:911 \
+                -e https_proxy=http://proxy-us.intel.com:912 \
 		-it --rm \
 		--net=host \
 		-v $data:$data \

@@ -37,7 +37,7 @@ WORKDIR /opt/embree/
 
 WORKDIR /app/
 COPY moana-ospray-demo-v1.2.tgz /tmp/
-RUN tar xf /tmp/moana-ospray-demo-v1.2.tgz --strip-components 2
+RUN tar xf /tmp/moana-ospray-demo-v1.2.tgz --strip-components 1
 
 WORKDIR /app/source
 RUN bash ./README.sh
@@ -59,6 +59,6 @@ COPY 4 4
 RUN chown root:root -R 4 && cp -rv 4/* /app/ && rm -rf 4
 
 WORKDIR /app/
-RUN ln -sf /mnt/seenas2/data/moana/island island && \
-    ln -sf /mnt/seenas2/data/moana /fast
+RUN ln -sf /home/ahota/data/disney/moana/island-v1.1 island && \
+    ln -sf /home/ahota/data/disney/moana /fast
 COPY server .
