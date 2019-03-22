@@ -3,6 +3,7 @@
 tag=moana:$USER
 xauth=/tmp/.docker.xauth.$USER
 data=/mnt/seenas2/data/moana
+out=$PWD/out
 port=8861
 registry=accona.eecs.utk.edu:5000
 name=moana_service
@@ -13,10 +14,12 @@ build() {
 }
 
 run() {
+	mkdir -p $out
 	docker run \
 		-it --rm \
 		--net=host \
 		-v $data:$data \
+		-v $out:/out \
 		$tag "$@"
 }
 
@@ -31,6 +34,7 @@ create() {
 		-p $port:$port \
 		${global:+--mode global} \
 		--mount type=bind,src=$data,dst=$data \
+		--mount type=bind,src=$out,dst=/out \
 		$registry/$tag python3.7 -u server.py --port $port "$@"
 }
 

@@ -35,6 +35,7 @@
 #endif
 
 #include <cstdio>
+#include <algorithm>
 
 namespace ospray {
   namespace app {
@@ -117,6 +118,7 @@ namespace ospray {
     {
 #ifdef OSPRAY_APPS_ENABLE_DENOISER
       oidn::DeviceRef dev = oidn::newDevice();
+      dev.commit();
       oidn::FilterRef filter = dev.newFilter("RT");
       filter.set("hdr", true);
       std::vector<vec4f> output;
@@ -250,15 +252,32 @@ namespace ospray {
 #else
         float *pixels = (float *)foo->map();
 #endif
+
+        // Save raw data to disk
+        {
+          static int _temp = 0;
+          if (_temp == 0) { srand(time(NULL)); _temp = rand(); }
+          char tempname[256];
+          snprintf(tempname, 256, "/out/image.%d.bin", _temp++);
+          FILE *f = fopen(tempname, "w");
+          for (int i=0; i<h; ++i)
+          for (int j=0; j<w; ++j) {
+            fwrite(&pixels[4*j+4*w*i+0], sizeof(float), 1, f);
+            fwrite(&pixels[4*j+4*w*i+1], sizeof(float), 1, f);
+            fwrite(&pixels[4*j+4*w*i+2], sizeof(float), 1, f);
+            fwrite(&pixels[4*j+4*w*i+3], sizeof(float), 1, f);
+          }
+          fclose(f);
+        }
   
         unsigned char *buffer = (unsigned char *)malloc(4 * w * h);
         for (int j=0; j<h; ++j) {
           float *rowIn = (float *)&pixels[4*(h-1-j)*w];
           for (int i=0; i<w; ++i) {
             int index = j * w + i;
-            buffer[4*index+0] = (unsigned char)(rowIn[4*i+0] * 255.0f);
-            buffer[4*index+1] = (unsigned char)(rowIn[4*i+1] * 255.0f);
-            buffer[4*index+2] = (unsigned char)(rowIn[4*i+2] * 255.0f);
+            buffer[4*index+0] = (unsigned char)std::min(255.0f, rowIn[4*i+0] * 255.0f / 3.0f);
+            buffer[4*index+1] = (unsigned char)std::min(255.0f, rowIn[4*i+1] * 255.0f / 3.0f);
+            buffer[4*index+2] = (unsigned char)std::min(255.0f, rowIn[4*i+2] * 255.0f / 3.0f);
             buffer[4*index+3] = 255;
           }
         }

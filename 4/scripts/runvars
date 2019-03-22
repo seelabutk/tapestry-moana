@@ -46,4 +46,4 @@ export OSP=./ospMoanaViewer
 # Lights definition files
 export COMMON="${COMMON} --lights-file ${LIGHTS}/lights.xml"
 export COMMON="${COMMON} --lights-file ${LIGHTS}/lights-sunset.xml"
-
+export COMMON="${COMMON} --filmic"
