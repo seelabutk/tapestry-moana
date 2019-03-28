@@ -2,7 +2,7 @@
 
 tag=tapestry-moana-demo:$USER
 xauth=/tmp/.docker.xauth.$USER
-data=/home/ahota/data/disney/moana
+data=/mnt/disney/moana
 out=$PWD/out
 port=8861
 registry=356377581652.dkr.ecr.us-east-2.amazonaws.com
