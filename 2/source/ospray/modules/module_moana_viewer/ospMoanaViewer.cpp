@@ -254,6 +254,7 @@ namespace ospray {
 #endif
 
         // Save raw data to disk
+        if(0)
         {
           static int _temp = 0;
           if (_temp == 0) { srand(time(NULL)); _temp = rand(); }
