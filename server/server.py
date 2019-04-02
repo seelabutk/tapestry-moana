@@ -65,13 +65,14 @@ class RequestHandler(SimpleHTTPRequestHandler):
 			raise NotImplementedError
 	
 	def do_GET_image(self):
-		_, image, what, x, y, z, ux, uy, uz, vx, vy, vz, quality, optstring = self.path.split('/')
+		_, image, what, x, y, z, ux, uy, uz, vx, vy, vz, width, height, optstring = self.path.split('/')
 		assert _ == '', f'{_!r} is not empty'
 		assert image == 'image'
 		x, y, z = map(float, (x, y, z))
 		ux, uy, uz = map(float, (ux, uy, uz))
 		vx, vy, vz = map(float, (vx, vy, vz))
-		quality = int(quality)
+		width = int(width)
+		height = int(height)
 
 		options = {}
 		it = iter(optstring.split(','))
@@ -79,13 +80,13 @@ class RequestHandler(SimpleHTTPRequestHandler):
 			options[k] = v
 
 		tiling = options.get('tiling', '0-1')
-		tile_index, num_tiles = tiling.split('-')
+		tile_index, n_cols, n_rows = tiling.split('-')
 		tile_index = int(tile_index)
-		num_tiles = int(num_tiles)
-		n_cols = int(sqrt(num_tiles))
+		n_cols = int(n_cols)
+		n_rows = int(n_rows)
 		
-		query = b'%f %f %f %f %f %f %f %f %f %d %d %d' % (
-			x, y, z, ux, uy, uz, vx, vy, vz, quality, tile_index, n_cols,
+		query = b'%f %f %f %f %f %f %f %f %f %d %d %d %d %d' % (
+			x, y, z, ux, uy, uz, vx, vy, vz, width, height, tile_index, n_cols, n_rows
 		)
 		
 		with _g_foo.lock:

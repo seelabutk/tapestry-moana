@@ -49,9 +49,11 @@
                     //host: new Array(2).fill(0).map((d, i) => `http://${i}.18.188.154.14.nip.io:9011`),
                     //host: new Array(2).fill(0).map((d, i) => `http://${i}.18.188.154.14.nip.io:9011`),
                     //host: ["http://accona.eecs.utk.edu:7000", "http://sinai.eecs.utk.edu:7000", "http://kavir.eecs.utk.edu:7000"],
-                    n_tiles: n_tiles_real,
+                    n_tiles: 1, //n_tiles_real,
+                    n_cols: 4,
+                    n_rows: 2,
                     low_res: 256, //Math.max(n_tiles_real, 128),
-                    width: size_real,
+                    width: size_real*2,
                     height: size_real,
 		    zoom: 512,
                 });

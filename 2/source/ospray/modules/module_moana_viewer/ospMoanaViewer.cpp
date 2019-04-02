@@ -153,14 +153,17 @@ namespace ospray {
       ssize_t linelen;
       while ((linelen = getline(&line, &linesize, stdin)) > 0) {
         float x, y, z, ux, uy, uz, vx, vy, vz;
-        int quality, tile_index, n_cols;
+        int width, height, tile_index, n_cols, n_rows;
 	int rv;
-        if (12 != (rv = sscanf(line, "%f %f %f %f %f %f %f %f %f %d %d %d", &x, &y, &z, &ux, &uy, &uz, &vx, &vy, &vz, &quality, &tile_index, &n_cols))) {
+        if (12 != (rv = sscanf(line, "%f %f %f %f %f %f %f %f %f %d %d %d %d %d", &x, &y, &z, &ux, &uy, &uz, &vx, &vy, &vz, &width, &height, &tile_index, &n_cols, &n_rows))) {
           printf("oof %d\n", rv);
         }
 
-        int w = quality;
-        int h = quality;
+        printf("camera pos: %f %f %f\ncamera up: %f %f %f\ncamera view: %f %f %f\nimage size: %d %d\ntile: %d %d %d\n",
+               x, y, z, ux, uy, uz, vx, vy, vz, width, height, tile_index, n_cols, n_rows);
+
+        int w = width;
+        int h = height;
         int tile_x = tile_index % n_cols;
         int tile_y = tile_index / n_cols;
   
@@ -169,19 +172,23 @@ namespace ospray {
         camera["dir"] = vec3f(vx, vy, vz);
         camera["imageEnd"] = vec2f(
           /* right */ ((float)tile_x + 1) / n_cols,
-          /* top */ ((float)n_cols - tile_y) / n_cols
+          /* top */ ((float)n_cols - tile_y) / n_rows
         );
         camera["imageStart"] = vec2f(
           /* left */ ((float)tile_x) / n_cols,
-          /* bottom */ ((float)n_cols - tile_y - 1) / n_cols
+          /* bottom */ ((float)n_cols - tile_y - 1) / n_rows
         );
         camera.commit();
+
+        printf("done with camera\n");
 
         std::shared_ptr<sg::FrameBuffer> fb = std::make_shared<sg::FrameBuffer>(vec2i(w, h));
         fb->operator[]("useDenoiser") = true;
         root->setChild("frameBuffer", fb);
         root->setChild("navFrameBuffer", fb);
         std::shared_ptr<sg::FrameBuffer> foo = root->renderFrame(true);
+
+        printf("rendered frame\n");
 
         bool hdr = !fb->toneMapped();
         filter.set("hdr", hdr);
@@ -242,6 +249,8 @@ namespace ospray {
         filter.commit();
         filter.execute();
         float *pixels = (float *)output.data();
+        printf("denoised\n");
+
         //float *pixels = (float *)foo->map();
 //        float *pixels = (float *)malloc(4 * w * h * sizeof(float));
 //        {
@@ -293,6 +302,8 @@ namespace ospray {
             buffer[4*index+3] = 255;
           }
         }
+        printf("normalized\n");
+
 
 #ifdef OSPRAY_APPS_ENABLE_DENOISER
 #else

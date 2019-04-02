@@ -174,9 +174,11 @@
             })
             .appendTo(this.element);
 
-        var n_tiles = this.settings.n_tiles;
-        var n_cols = Math.sqrt(n_tiles);
+        var n_cols = this.settings.n_cols;
+        var n_rows = this.settings.n_rows;
+        var n_tiles = n_cols * n_rows;
         var tile_width = this.settings.width / n_cols;
+        var tile_height = this.settings.height / n_rows;
 
         for (var i = 0; i < n_tiles; i++)
         {
@@ -186,7 +188,7 @@
                 .css({
                     "float": "left",
                     "width": tile_width + "px",
-                    "height": tile_width + "px"
+                    "height": tile_height + "px"
                 })
                 .appendTo(base);
         }
@@ -280,7 +282,7 @@
 
         if (tiling)
         {
-            options["tiling"] = tileid.toString() + "-" + this.settings.n_tiles.toString();
+            options["tiling"] = tileid.toString() + "-" + this.settings.n_cols.toString() + "-" + this.settings.n_rows.toString();
         }
 
         if ($(this.element).attr("data-colormap"))
@@ -319,10 +321,13 @@
         }
         options_str = options_str.substring(0, options_str.length - 1);
 
-        var quality = imagesize;
         if (imagesize == 0)
         {
-            quality = this.settings.width;
+            var quality = (this.settings.width/4).toString() + "/" + (this.settings.height/4).toString();
+        }
+        else
+        {
+            var quality = this.settings.width.toString() + "/" + this.settings.height.toString();
         }
 
         var host;
@@ -368,9 +373,11 @@
         	return;
         }
 
-        var n_tiles = this.settings.n_tiles;
-        var n_cols = Math.sqrt(n_tiles);
+        var n_cols = this.settings.n_cols;
+        var n_rows = this.settings.n_rows;
+        var n_tiles = n_cols * n_rows;
         var width = this.settings.width;
+        var height = this.settings.height;
 
 	var tiles = new Array(n_tiles).fill(0).map(function(d, i) { return i; });
 	if (false && imagesize !== 0) {
@@ -813,6 +820,8 @@
         low_res: 128,
         zoom: 512,
         n_tiles: 1,
+        n_cols: 4,
+        n_rows: 2,
         tiling_status: "on",
         max_cache_length: 512, // client-side caching for preventing browser request cancellation
         enable_zoom: true,
