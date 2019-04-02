@@ -40,6 +40,11 @@
 namespace ospray {
   namespace app {
 
+    inline float linear_to_srgb(const float f) {
+      const float c = std::max(f, 0.f);
+      return c <= 0.0031308f ? 12.92f*c : std::pow(c, 1.f/2.4f)*1.055f - 0.055f;
+    }
+
     struct Foo {
       void write(void *data, int size) {
         unsigned char *d = (unsigned char *)data;
@@ -120,7 +125,6 @@ namespace ospray {
       oidn::DeviceRef dev = oidn::newDevice();
       dev.commit();
       oidn::FilterRef filter = dev.newFilter("RT");
-      filter.set("hdr", true);
       std::vector<vec4f> output;
 #endif
 
@@ -178,6 +182,9 @@ namespace ospray {
         root->setChild("frameBuffer", fb);
         root->setChild("navFrameBuffer", fb);
         std::shared_ptr<sg::FrameBuffer> foo = root->renderFrame(true);
+
+        bool hdr = !fb->toneMapped();
+        filter.set("hdr", hdr);
 
 #ifdef OSPRAY_APPS_ENABLE_DENOISER
         {
@@ -254,8 +261,7 @@ namespace ospray {
 #endif
 
         // Save raw data to disk
-        if(0)
-        {
+        if (0) {
           static int _temp = 0;
           if (_temp == 0) { srand(time(NULL)); _temp = rand(); }
           char tempname[256];
@@ -272,13 +278,18 @@ namespace ospray {
         }
   
         unsigned char *buffer = (unsigned char *)malloc(4 * w * h);
+
+        // XXX: use a constant normalization factor since each process only sees
+        // a single tile, not the whole image.  Normalization has to be
+        // consistent across all tiles.
+        float normalize = 1.f/2.3f; // 2.3 seems a decent value with filmic tonemapping
         for (int j=0; j<h; ++j) {
           float *rowIn = (float *)&pixels[4*(h-1-j)*w];
           for (int i=0; i<w; ++i) {
             int index = j * w + i;
-            buffer[4*index+0] = (unsigned char)std::min(255.0f, rowIn[4*i+0] * 255.0f / 3.0f);
-            buffer[4*index+1] = (unsigned char)std::min(255.0f, rowIn[4*i+1] * 255.0f / 3.0f);
-            buffer[4*index+2] = (unsigned char)std::min(255.0f, rowIn[4*i+2] * 255.0f / 3.0f);
+            buffer[4*index+0] = (unsigned char)(255.0f * linear_to_srgb(rowIn[4*i+0] * normalize));
+            buffer[4*index+1] = (unsigned char)(255.0f * linear_to_srgb(rowIn[4*i+1] * normalize));
+            buffer[4*index+2] = (unsigned char)(255.0f * linear_to_srgb(rowIn[4*i+2] * normalize));
             buffer[4*index+3] = 255;
           }
         }
