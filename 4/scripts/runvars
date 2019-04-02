@@ -3,7 +3,7 @@
 export DEMO_ROOT=${PWD}
 
 export ISLAND=${DEMO_ROOT}/island
-export BIFFS=${DEMO_ROOT}/biffs
+export BIFFS=${ISLAND}/biffs
 export LIGHTS=${DEMO_ROOT}/lights
 
 export OSPRAY_PTEX_BASE_DIR=${ISLAND}
