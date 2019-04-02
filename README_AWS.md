@@ -1,15 +1,102 @@
-# Setting up AWS for Tapestry/Moana
+# Setting up AWS for Tapestry/Moana Demo
 
-Documentation created via discussions with Tanner about setting up AWS for the
-Tapestry/Moana demo. There are two ways to set up AWS to have multiple nodes
-that can serve as Tapestry servers, with and without Amazon's auto-scaling
-functionality.
+Documentation for setting up the Tapestry/Moana demo on AWS.
 
-## Using AWS' built-in auto-scaling
+## Preparing the data
+
+The Moana Island data needs to be placed into an EBS volume and then backed up
+to an S3 snapshot.  The snapshot is what the cluster will use to access the
+data.
+
+Intel AWS organization snapshot containing Moana Island data with BIFF files:
+snap-0826763b2230ee239.
+
+There are three steps to setting up the data (and setting up other necessary
+items), described as follows.
+
+## Creating an initial instance, security group, and SSH key pair
+
+It's useful to go through these steps whether the snapshot is available or not
+so that the demo security group and SSH key pair can be created. It is also
+helpful to know how to interface with individual instances when troubleshooting
+clusters.
+
+1.  Create an EC2 instance that is "good enough" for basic commands like `wget`
+    and `tar`. From the EC2 console:
+    1.  Hit Launch Instance
+    2.  Select Amazon Linux 2 AMI (x86)
+    3.  Choose an instance size. I chose t2.large
+    4.  Hit Configure Instance Details
+    5.  Hit Add Storage
+    6.  Hit Add New Volume to create an EBS volume
+        1.  Volume type should be EBS
+        2.  Leave device as `/dev/sdb`
+        3.  Leave snapshot blank
+        4.  Set size to an appropriate value. I chose 200 GB
+        5.  Make sure Delete on Termination is UNCHECKED
+        6.  On the Intel AWS org, the volume should be encrypted
+    7.  Hit Add Tags
+    8.  Hit Configure Security Group. We will be creating the security group
+        our cluster will use at this point just to get it out of the way
+        1.  For inbound rules, create an HTTP rule for 0.0.0.0,::/0, HTTPS for
+            0.0.0.0,::/0, and SSH for 0.0.0.0,::/0. This will allow any IP
+            address to connect via ports 80 and 443 with TCP connections and
+            port 22 for SSH connections (however you will need a key to login).
+            Create a custom rule for port 8861 for the demo server instances to
+            use
+        2.  Create the same rules for outbound connections
+    9.  Hit Launch
+    10. You will need to create an SSH key
+        1.  Give the key a name and hit Download Key Pair
+        2.  This key can be reused for every instance we launch in the future,
+            including those in our cluster, so we can add it to our SSH
+            configuration to make logging in easy. Save the key somewhere
+            known, e.g. to `~/.ssh/`
+        3.  Edit your local SSH config, `~/.ssh/config` and add an entry:
+            
+            ```
+            Host *.compute.amazonaws.com
+                User ec2-user
+                IdentityFile ~/.ssh/<your_file>.pem
+            ```
+
+2.  The management console will show the instance start up and give you a DNS
+    hostname and IP address. From the terminal, run `ssh <hostname>` and the
+    config file above should handle using your key to log you in
+3.  Mount the EBS volume to your instance
+    1.  Run `lsblk` to find the device name of your 200 GB EBS volume. Usually
+        it is `/dev/nvme1n1` since it is the only EBS volume attached
+    2.  Run `mount /dev/<ebs_device> /mnt` to mount your volume
+4.  Launch a terminal multiplexer of your choice (e.g. `tmux` or `screen`) or
+    `nohup` to download the data from
+    https://www.technology.disneyanimation.com/islandscene
+5.  Get some coffee while it downloads
+6.  Extract the data with `tar xf island-basepackage-v1.1.tgz`
+
+### Preparing the BIFFs
+
+You will need to create BIFFs from the raw data to use with OSPRay.
+
+### Creating an S3 snapshot
+
+Creating a snapshot from the volume will allow the data to be copied into new
+EBS volumes dynamically when instances are launched into the demo cluster.
+
+1.  From the management console, go to Volumes under Elastic Block Store
+2.  Select your EBS volume with the data
+3.  At this point it's a good idea to add a name to the volume, e.g.
+    `moana-island-data` so that you can more easily reference it. Hover over
+    the blank Name field and click the edit icon to change the name
+4.  Go to Actions -> Create Snapshot
+5.  Give the snapshot a description. You can also add a tag with key "Name" and
+    value whatever you would like to call the snapshot (again for easier
+    reference in the future)
+
+## Using AWS' built-in auto scaling
 
 This method removes some/most of the burden of sysadmin on the user. The gist
-is that AWS will scale up an instance automatically, allocating new nodes for
-you.
+is that AWS will scale up a cluster automatically, allocating new nodes and/or
+tasks for you.
 
 1.  Upload data to an EBS volume
     1.  Create an EC2 instance that is good enough for running basic commands,
