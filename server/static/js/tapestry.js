@@ -323,11 +323,11 @@
 
         if (imagesize == 0)
         {
-            var quality = (this.settings.width/4).toString() + "/" + (this.settings.height/4).toString();
+            var quality = this.settings.width.toString() + "/" + this.settings.height.toString();
         }
         else
         {
-            var quality = this.settings.width.toString() + "/" + this.settings.height.toString();
+            var quality = (this.settings.width/4).toString() + "/" + (this.settings.height/4).toString();
         }
 
         var host;

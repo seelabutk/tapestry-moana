@@ -79,7 +79,7 @@ class RequestHandler(SimpleHTTPRequestHandler):
 		for k, v in zip(it, it):
 			options[k] = v
 
-		tiling = options.get('tiling', '0-1')
+		tiling = options.get('tiling', '0-1-1')
 		tile_index, n_cols, n_rows = tiling.split('-')
 		tile_index = int(tile_index)
 		n_cols = int(n_cols)
