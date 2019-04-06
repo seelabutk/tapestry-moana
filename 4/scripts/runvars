@@ -15,11 +15,12 @@ export LD_LIBRARY_PATH=${SRC}/ptex/install/lib:${LD_LIBRARY_PATH}
 
 export COMMON="${COMMON} -sg:frameAccumulationLimit=256"
 export COMMON="${COMMON} --osp:module:biff"
-export COMMON="${COMMON} --osp:module:ptex"
+ export COMMON="${COMMON} --osp:module:ptex"
 export COMMON="${COMMON} -r pathtracer"
+#export COMMON="${COMMON} -r raycast"
 export COMMON="${COMMON} -sg:UseGeometryLights=false"
 # Optionally disable OpenImageDenoise (on by default)
-#export COMMON="${COMMON} -sg:frameBuffer:useDenoiser=false -sg:navFrameBuffer:useDenoiser=false"
+# export COMMON="${COMMON} -sg:frameBuffer:useDenoiser=false -sg:navFrameBuffer:useDenoiser=false"
 
 #export COMMON="${COMMON} -hd"
 export COMMON="${COMMON} -w 1536 -h 644"
@@ -44,6 +45,6 @@ export OSP=./ospMoanaViewer
 #export OSP="${MPI_ARGS} ./ospMoanaViewer --osp:mpi"
 
 # Lights definition files
-export COMMON="${COMMON} --lights-file ${LIGHTS}/lights.xml"
-export COMMON="${COMMON} --lights-file ${LIGHTS}/lights-sunset.xml"
+#export COMMON="${COMMON} --lights-file ${LIGHTS}/lights.xml"
+#export COMMON="${COMMON} --lights-file ${LIGHTS}/lights-sunset.xml"
 export COMMON="${COMMON} --filmic"

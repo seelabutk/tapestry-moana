@@ -65,14 +65,15 @@ class RequestHandler(SimpleHTTPRequestHandler):
 			raise NotImplementedError
 	
 	def do_GET_image(self):
-		_, image, what, x, y, z, ux, uy, uz, vx, vy, vz, width, height, optstring = self.path.split('/')
+		_, image, what, x, y, z, ux, uy, uz, vx, vy, vz, width, height, fovy, optstring = self.path.split('/')
 		assert _ == '', f'{_!r} is not empty'
 		assert image == 'image'
 		x, y, z = map(float, (x, y, z))
 		ux, uy, uz = map(float, (ux, uy, uz))
 		vx, vy, vz = map(float, (vx, vy, vz))
-		width = int(width)
-		height = int(height)
+		width = int(float(width))
+		height = int(float(height))
+		fovy = float(fovy)
 
 		options = {}
 		it = iter(optstring.split(','))
@@ -85,8 +86,8 @@ class RequestHandler(SimpleHTTPRequestHandler):
 		n_cols = int(n_cols)
 		n_rows = int(n_rows)
 		
-		query = b'%f %f %f %f %f %f %f %f %f %d %d %d %d %d' % (
-			x, y, z, ux, uy, uz, vx, vy, vz, width, height, tile_index, n_cols, n_rows
+		query = b'%f %f %f %f %f %f %f %f %f %d %d %d %d %d %f' % (
+			x, y, z, ux, uy, uz, vx, vy, vz, width, height, tile_index, n_cols, n_rows, fovy
 		)
 		
 		with _g_foo.lock:

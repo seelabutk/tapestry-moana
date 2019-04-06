@@ -3,9 +3,17 @@
 	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	<meta name="mobile-web-app-capable" content="yes">
         <title>Tapestry</title>
-        <link rel="stylesheet" href="/static/css/style.css">
-        <style>.hyperimage { touch-action: none; }</style>
-	<style>body { background-color: #999; }</style>
+        <link rel="stylesheet" href="css/style.css">
+        <style>
+            body { background-color: #111; color: #ddd; font-family: sans-serif;}
+            #container { width: 1066px; margin: 0 auto; }
+            .hyperimage { touch-action: none; padding: 10px; border: 1px solid #444; margin: 10px; }
+            ul { list-style-type: none; text-align: center; background-color: #333; margin: 0; padding: 0; overflow: hidden; }
+            li { display: inline-block; padding: 1em; }
+            li:hover { background-color: #666; color: #fff; }
+            li a { display: block; color: #ddd; text-decoration: none; }
+            footer { font-size: smaller; clear: both; color: #666; padding: 0; text-align: center; vertical-align: middle; line-height: normal; margin: 0; position: fixed; bottom: 0px; width: 100%; }
+        </style>
 
         <!-- jQuery dependency -->
         <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
@@ -37,31 +45,68 @@
 				}
 
                 $(".hyperimage").attr("data-dataset", getParameterByName("dataset") || 'supernova');
-		var n_tiles = 2,
-		      image_size = 9,
-		      n_tiles_real = Math.pow(n_tiles, 2),
-		      size_real = Math.pow(2, image_size);
-		document.getElementById('heading').innerText = n_tiles_real + ' tiles - ' + size_real + ' size';
                 $(".hyperimage").tapestry({
-                    //host: 'http://accona.eecs.utk.edu:8010',
-                    //host: 'http://accona.eecs.utk.edu:8860',
-		    //host: 'http://18.191.74.180:9011',
-                    //host: new Array(2).fill(0).map((d, i) => `http://${i}.18.188.154.14.nip.io:9011`),
-                    //host: new Array(2).fill(0).map((d, i) => `http://${i}.18.188.154.14.nip.io:9011`),
-                    //host: ["http://accona.eecs.utk.edu:7000", "http://sinai.eecs.utk.edu:7000", "http://kavir.eecs.utk.edu:7000"],
-                    n_tiles: 1, //n_tiles_real,
+                    n_tiles: 1,
                     n_cols: 4,
                     n_rows: 2,
-                    low_res: 256, //Math.max(n_tiles_real, 128),
-                    width: size_real*2,
-                    height: size_real,
+                    low_res: 256,
+                    width: 1024,
+                    height: 429,
 		    zoom: 512,
                 });
             });
         </script>
     </head>
     <body>
-        <h1 id="heading"></h1>
-        <div class="hyperimage" id="dataset" data-position="0,0,2048"></div>
+        <div id="container">
+            <h1>Tapestry &#8212; Moana Island Scene</h1>
+            Powered by Intel&reg; Rendering Framework
+            <div class="hyperimage" id="dataset" data-position="0,0,2048"></div>
+            <ul>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camuntarget=0,0,2048">
+                        reset
+                    </a>
+                </li>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-1139.015893,23.286733,1479.794723,-0.107149,0.991691,0.071190,244.814337,238.807148,560.380117,29.1186">
+                        shotCam
+                    </a>
+                </li>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-510.523907,87.308744,181.770197,0.073871,0.996865,-0.028356,152.465305,30.939795,-72.727517,22.8041">
+                        beachCam
+                    </a>
+                </li>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-124.025465,405.622146,369.173046,-0.200376,0.972526,0.118502,472.312924,571.462848,16.499506,22.8041">
+                        palmsCam
+                    </a>
+                </li>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-71.335795,78.734578,108.929948,0.002016,0.999990,0.004097,-271.104819,80.800854,-297.054315,22.8041">
+                        dunesACam
+                    </a>
+                </li>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=3.552661,850.641890,747.549775,0.137061,0.792946,-0.593676,237.075317,52.971848,-263.947975,22.8041">
+                        hibiscusCam
+                    </a>
+                </li>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-53.247680,63.459327,-57.577743,0.263805,0.911128,-0.316628,-44.095926,56.992385,-68.562019,22.8041">
+                        rootsCam
+                    </a>
+                </li>
+                <li>
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-5.171249,20.334400,-89.973061,0.306118,0.923623,-0.230677,18.549567,8.008263,-107.847977,22.8041">
+                        grassCam
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <footer>
+            Dataset graciously provided by Walt Disney Animation Studios.
+        </footer>
     </body>
 </html>

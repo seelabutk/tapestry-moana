@@ -59,7 +59,21 @@ inspect() {
 	# Thanks https://stackoverflow.com/q/48235040
 	rm -f $xauth
 	xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $xauth nmerge -
-	docker run -it --rm --entrypoint bash -v $PWD:$PWD -v $data:$data -w $PWD -e DISPLAY -v /etc/group:/etc/group:ro -v $xauth:$xauth -e XAUTHORITY=$xauth -v /etc/passwd:/etc/passwd:ro -v /etc/shadow:/etc/shadow:ro -v /etc/sudoers.d:/etc/sudoers.d:ro -v /tmp/.X11-unix:/tmp/.X11-unix:rw --ipc=host --net=host $tag "$@"
+	#docker run -it --rm --entrypoint bash -v $PWD:$PWD -v $data:$data -w $PWD -e DISPLAY -v /etc/group:/etc/group:ro -v $xauth:$xauth -e XAUTHORITY=$xauth -v /etc/passwd:/etc/passwd:ro -v /etc/shadow:/etc/shadow:ro -v /etc/sudoers.d:/etc/sudoers.d:ro -v /tmp/.X11-unix:/tmp/.X11-unix:rw --ipc=host --net=host $tag "$@"
+	docker run -it --rm \
+                   --entrypoint bash \
+                   -v /NAS/DataSets/models/Disney/island:/NAS/DataSets/models/Disney/island \
+                   -v $PWD/island-v1.1.biff:/app/biffs/island-v1.1.biff \
+                   -w $PWD \
+                   -e DISPLAY \
+                   -v /etc/group:/etc/group:ro \
+                   -v $xauth:$xauth \
+                   -e XAUTHORITY=$xauth \
+                   -v /etc/passwd:/etc/passwd:ro \
+                   -v /etc/shadow:/etc/shadow:ro \
+                   -v /etc/sudoers.d:/etc/sudoers.d:ro \
+                   -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+                   --ipc=host --net=host $tag "$@"
 }
 
 extract() {

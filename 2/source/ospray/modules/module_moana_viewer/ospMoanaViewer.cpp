@@ -154,9 +154,10 @@ namespace ospray {
       while ((linelen = getline(&line, &linesize, stdin)) > 0) {
         float x, y, z, ux, uy, uz, vx, vy, vz;
         int width, height, tile_index, n_cols, n_rows;
+        float fovy;
 	int rv;
-        if (12 != (rv = sscanf(line, "%f %f %f %f %f %f %f %f %f %d %d %d %d %d", &x, &y, &z, &ux, &uy, &uz, &vx, &vy, &vz, &width, &height, &tile_index, &n_cols, &n_rows))) {
-          printf("oof %d\n", rv);
+        if (14 != (rv = sscanf(line, "%f %f %f %f %f %f %f %f %f %d %d %d %d %d %f", &x, &y, &z, &ux, &uy, &uz, &vx, &vy, &vz, &width, &height, &tile_index, &n_cols, &n_rows, &fovy))) {
+          fprintf(stderr, "oof %d\n", rv);
         }
 
         int w = width;
@@ -175,6 +176,7 @@ namespace ospray {
           /* left */ ((float)tile_x) / n_cols,
           /* bottom */ ((float)n_rows - tile_y - 1) / n_rows
         );
+        camera["fovy"] = fovy;
         camera.commit();
 
         std::shared_ptr<sg::FrameBuffer> fb = std::make_shared<sg::FrameBuffer>(vec2i(w, h));
@@ -247,24 +249,6 @@ namespace ospray {
         filter.execute();
         float *pixels = (float *)output.data();
 
-        //float *pixels = (float *)foo->map();
-//        float *pixels = (float *)malloc(4 * w * h * sizeof(float));
-//        {
-//          const void *ptr = foo->map(OSP_FB_NORMAL);
-//          const float *input = (float *)ptr;
-//          for (int i=0; i<h; ++i)
-//          for (int j=0; j<w; ++j) {
-//            pixels[4*j+4*w*i+0] = input[3*j+3*w*i+0];
-//            pixels[4*j+4*w*i+1] = input[3*j+3*w*i+1];
-//            pixels[4*j+4*w*i+2] = input[3*j+3*w*i+2];
-//            pixels[4*j+4*w*i+3] = 255.0f;
-//          }
-//          foo->unmap(ptr);
-//        }
-#else
-        float *pixels = (float *)foo->map();
-#endif
-
         // Save raw data to disk
         if (0) {
           static int _temp = 0;
@@ -299,8 +283,20 @@ namespace ospray {
           }
         }
 
-#ifdef OSPRAY_APPS_ENABLE_DENOISER
 #else
+        float *pixels = (float *)foo->map();
+
+        unsigned char *buffer = (unsigned char *)malloc(4 * w * h);
+        for (int j=0; j<h; ++j) {
+          float *rowIn = (float *)&pixels[4*(h-1-j)*w];
+          for (int i=0; i<w; ++i) {
+            int index = j * w + i;
+            buffer[4*index+0] = (unsigned char)(255.0f * (rowIn[4*i+0]));
+            buffer[4*index+1] = (unsigned char)(255.0f * (rowIn[4*i+1]));
+            buffer[4*index+2] = (unsigned char)(255.0f * (rowIn[4*i+2]));
+            buffer[4*index+3] = 255;
+          }
+        }
         foo->unmap(pixels);
 #endif
   

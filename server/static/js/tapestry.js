@@ -155,6 +155,18 @@
         this.camera.zoomScale = this.camera.position.elements[2];
     }
 
+    Tapestry.prototype.setup_camera_arcball = function(position, up)
+    {
+        this.camera = new ArcBall();
+        this.camera.up = up;
+        this.camera.position = position;
+
+        this.camera.setBounds(this.settings.width, this.settings.height);
+        this.camera.zoomScale = Math.sqrt(this.camera.position.elements[0]*this.camera.position.elements[0] +
+                                          this.camera.position.elements[1]*this.camera.position.elements[1] +
+                                          this.camera.position.elements[2]*this.camera.position.elements[2]);
+    }
+
     /**
      * Removes all tiles (if they exist) and sets up tiling
      * in the hyperimage. It uses settings.n_tiles to determine
@@ -263,18 +275,38 @@
         var new_camera_up = m.multiply(this.camera.up);
 
         var precision = 3;
-        var x = new_camera_position.elements[0].toFixed(precision);
-        var y = new_camera_position.elements[1].toFixed(precision);
-        var z = new_camera_position.elements[2].toFixed(precision);
+        var x, y, z;
+        var upx, upy, upz;
+        var viewx, viewy, viewz;
 
-        precision = 3;
-        var upx = new_camera_up.elements[0].toFixed(precision);
-        var upy = new_camera_up.elements[1].toFixed(precision);
-        var upz = new_camera_up.elements[2].toFixed(precision);
+            x = new_camera_position.elements[0].toFixed(precision);
+            y = new_camera_position.elements[1].toFixed(precision);
+            z = new_camera_position.elements[2].toFixed(precision);
 
-        var viewx = -x;
-        var viewy = -y;
-        var viewz = -z;
+            upx = new_camera_up.elements[0].toFixed(precision);
+            upy = new_camera_up.elements[1].toFixed(precision);
+            upz = new_camera_up.elements[2].toFixed(precision);
+
+        if(this.settings.current_target.length == 0)
+        {
+            viewx = -x;
+            viewy = -y;
+            viewz = -z;
+        }
+        else
+        {
+            //x = this.settings.current_target[0].toFixed(precision);
+            //y = this.settings.current_target[1].toFixed(precision);
+            //z = this.settings.current_target[2].toFixed(precision);
+
+            //upx = this.settings.current_target[3].toFixed(precision);
+            //upy = this.settings.current_target[4].toFixed(precision);
+            //upz = this.settings.current_target[5].toFixed(precision);
+
+            viewx = (this.settings.current_target[6] /*- this.settings.current_target[0] */- x).toFixed(precision);
+            viewy = (this.settings.current_target[7] /*- this.settings.current_target[1] */- y).toFixed(precision);
+            viewz = (this.settings.current_target[8] /*- this.settings.current_target[2] */- z).toFixed(precision);
+        }
 
         var dataset = $(this.element).attr("data-dataset");
         
@@ -323,11 +355,15 @@
 
         if (imagesize == 0)
         {
-            var quality = this.settings.width.toString() + "/" + this.settings.height.toString();
+            var quality = this.settings.width.toString()
+                        + "/"
+                        + this.settings.height.toString();
         }
         else
         {
-            var quality = (this.settings.width/4).toString() + "/" + (this.settings.height/4).toString();
+            var quality = (this.settings.width / 4).toString()
+                        + "/"
+                        + (this.settings.height / 4).toString();
         }
 
         var host;
@@ -345,7 +381,8 @@
         var path = host + "image/" + dataset + "/" + x + "/" + y + "/" + z
             + "/" + upx + "/" + upy + "/" + upz + "/"
             + viewx + "/" + viewy + "/" + viewz + "/"
-            + quality.toString() + "/" + options_str;
+            + quality.toString() + "/" + this.settings.fovy.toString() + "/"
+            + options_str;
 
         return path;
     }
@@ -601,7 +638,71 @@
     {
         var operator_index = action.search(/\+|=|\(|\)/);
         var operation = action.slice(0, operator_index);
-        if (operation == 'position')
+        if (operation == 'camtarget')
+        {
+            var target = action.slice(operator_index + 1);
+            target = target.split(",");
+            this.settings.current_target = target.slice(0, 9).map(parseFloat);
+            this.settings.fovy = parseFloat(target[9])
+
+            var radius = Math.sqrt(parseFloat(target[0])*parseFloat(target[0])
+                               + parseFloat(target[1])*parseFloat(target[1])
+                               + parseFloat(target[2])*parseFloat(target[2]));
+            var position = Vector.create([
+                parseFloat(target[0]),
+                parseFloat(target[1]),
+                parseFloat(target[2]),
+                1.0
+            ]);
+            var up = Vector.create([
+                parseFloat(target[3]),
+                parseFloat(target[4]),
+                parseFloat(target[5]),
+                1.0
+            ]);
+
+            this.setup_camera(position, up);
+            this.camera.zoomScale = radius;
+            this.camera.Quat = [0.0, 0.0, 0.0, 1.0];
+
+            this.camera.rotateTo(position);
+
+            this.render(0);
+            return this;
+        }
+        else if (operation == 'camuntarget')
+        {
+            var target = action.slice(operator_index + 1);
+            target = target.split(",");
+            this.settings.current_target = [];
+            this.settings.fovy = 60.0;
+
+            var radius = Math.sqrt(parseFloat(target[0])*parseFloat(target[0])
+                               + parseFloat(target[1])*parseFloat(target[1])
+                               + parseFloat(target[2])*parseFloat(target[2]));
+            var position = Vector.create([
+                parseFloat(target[0]),
+                parseFloat(target[1]),
+                parseFloat(target[2]),
+                1.0
+            ]);
+            var up = Vector.create([
+                parseFloat(target[3]),
+                parseFloat(target[4]),
+                parseFloat(target[5]),
+                1.0
+            ]);
+
+            this.setup_camera(position, up);
+            this.camera.zoomScale = radius;
+            this.camera.Quat = [0.0, 0.0, 0.0, 1.0];
+
+            this.camera.rotateTo(position);
+
+            this.render(0);
+            return this;
+        }
+        else if (operation == 'position')
         {
             var position = action.slice(operator_index + 1);
             position = position.split(",");
@@ -831,6 +932,8 @@
         do_isosurface: false,
         isovalues: [0], 
         filters: [],
+        current_target: [],
+        fovy: 60.0,
         camera_link_status: 0 // 0: Not linked, 1: Waiting to be linked, 2: Linked
     };
 

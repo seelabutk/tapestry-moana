@@ -59,6 +59,10 @@ COPY 4 4
 RUN chown root:root -R 4 && cp -rv 4/* /app/ && rm -rf 4
 
 WORKDIR /app/
-RUN ln -sf /mnt/disney/moana/island-v1.1 island && \
-    ln -sf /mnt/disney/moana /fast
+# For AWS
+# RUN ln -sf /mnt/disney/moana/island-v1.1 island && \
+#     ln -sf /mnt/disney/moana /fast
+# For local
+RUN ln -sf /mnt/ssd/disney/moana/island island && \
+    ln -sf /mnt/ssd/disney/moana /fast
 COPY server .
