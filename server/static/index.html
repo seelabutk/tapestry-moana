@@ -9,10 +9,12 @@
             #container { width: 1066px; margin: 0 auto; }
             .hyperimage { touch-action: none; padding: 10px; border: 1px solid #444; margin: 10px; }
             ul { list-style-type: none; text-align: center; background-color: #333; margin: 0; padding: 0; overflow: hidden; }
-            li { display: inline-block; padding: 1em; }
+            li { display: inline-block; }
             li:hover { background-color: #666; color: #fff; }
-            li a { display: block; color: #ddd; text-decoration: none; }
+            li a { display: block; padding: 1em; color: #ddd; text-decoration: none; }
             footer { font-size: smaller; clear: both; color: #666; padding: 0; text-align: center; vertical-align: middle; line-height: normal; margin: 0; position: fixed; bottom: 0px; width: 100%; }
+            #content { width: 1066px; padding: 100px; margin: 0 auto; text-align: center; }
+            #content a { color: #ddd; }
         </style>
 
         <!-- jQuery dependency -->
@@ -69,12 +71,12 @@
                     </a>
                 </li>
                 <li>
-                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-1139.015893,23.286733,1479.794723,-0.107149,0.991691,0.071190,244.814337,238.807148,560.380117,29.1186">
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-1139.015893,23.286733,1479.794723,0.0,1.0,0.0,244.814337,238.807148,560.380117,29.1186">
                         shotCam
                     </a>
                 </li>
                 <li>
-                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-510.523907,87.308744,181.770197,0.073871,0.996865,-0.028356,152.465305,30.939795,-72.727517,22.8041">
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-510.523907,87.308744,181.770197,0.0,1.0,0.0,152.465305,30.939795,-72.727517,22.8041">
                         beachCam
                     </a>
                 </li>
@@ -94,19 +96,23 @@
                     </a>
                 </li>
                 <li>
-                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-53.247680,63.459327,-57.577743,0.263805,0.911128,-0.316628,-44.095926,56.992385,-68.562019,22.8041">
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-53.247680,63.459327,-57.577743,0.0,1.0,0.0,-44.095926,56.992385,-68.562019,22.8041">
                         rootsCam
                     </a>
                 </li>
                 <li>
-                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-5.171249,20.334400,-89.973061,0.306118,0.923623,-0.230677,18.549567,8.008263,-107.847977,22.8041">
+                    <a class="hyperaction" href="#" for="dataset" data-action="camtarget=-5.171249,20.334400,-89.973061,0.0,1.0,0.0,18.549567,8.008263,-107.847977,22.8041">
                         grassCam
                     </a>
                 </li>
             </ul>
         </div>
-        <footer>
-            Dataset graciously provided by Walt Disney Animation Studios.
-        </footer>
+        <div id="content">
+            For more information on Tapestry, please visit
+            <a href="https://seelabutk.github.io/tapestry">https://seelabutk.github.io/tapestry</a>
+            <br>
+            Dataset graciously provided by
+            <a href="https://www.technology.disneyanimation.com/islandscene">Walt Disney Animation Studios</a>.
+        </div>
     </body>
 </html>

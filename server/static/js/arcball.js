@@ -242,7 +242,10 @@ ArcBall.prototype = {
             quat = [Perp[0],Perp[1],Perp[2],dot(normalized_src.elements, normalized_dst.elements)];
         } 
 
-        this.rotateFromQuaternion(quat, this.LastRot, null);
+        // ALOK: bug? why is this?
+        // this resets the z value to 500 because the zoom value is null
+        //this.rotateFromQuaternion(quat, this.LastRot, null);
+        this.rotateFromQuaternion(quat, this.LastRot, p[2]);
         return;
 
         this.ThisRot = Matrix3fSetRotationFromQuat4f(quat);

@@ -687,10 +687,7 @@
                 1.0
             ]);
             var up = Vector.create([
-                parseFloat(target[3]),
-                parseFloat(target[4]),
-                parseFloat(target[5]),
-                1.0
+                0.0, 1.0, 0.0, 1.0
             ]);
 
             this.setup_camera(position, up);
