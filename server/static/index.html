@@ -6,14 +6,14 @@
         <link rel="stylesheet" href="css/style.css">
         <style>
             body { background-color: #111; color: #ddd; font-family: sans-serif;}
-            #container { width: 1066px; margin: 0 auto; }
-            .hyperimage { touch-action: none; padding: 10px; border: 1px solid #444; margin: 10px; }
+            #container { width: 100%; margin: 0 auto; }
+            .hyperimage { touch-action: none; margin: 10px auto; }
             ul { list-style-type: none; text-align: center; background-color: #333; margin: 0; padding: 0; overflow: hidden; }
             li { display: inline-block; }
             li:hover { background-color: #666; color: #fff; }
             li a { display: block; padding: 1em; color: #ddd; text-decoration: none; }
             footer { font-size: smaller; clear: both; color: #666; padding: 0; text-align: center; vertical-align: middle; line-height: normal; margin: 0; position: fixed; bottom: 0px; width: 100%; }
-            #content { width: 1066px; padding: 100px; margin: 0 auto; text-align: center; }
+            #content { width: 100%; margin: 0 auto; text-align: center; }
             #content a { color: #ddd; }
         </style>
 
@@ -46,14 +46,15 @@
 					return decodeURIComponent(results[2].replace(/\+/g, " "));
 				}
 
+                var pagewidth = document.body.clientWidth - 32;
                 $(".hyperimage").attr("data-dataset", getParameterByName("dataset") || 'supernova');
                 $(".hyperimage").tapestry({
                     n_tiles: 1,
                     n_cols: 4,
                     n_rows: 2,
                     low_res: 256,
-                    width: 1024,
-                    height: 429,
+                    width: pagewidth, //1024,
+                    height: pagewidth/2.386946,
 		    zoom: 512,
                 });
             });

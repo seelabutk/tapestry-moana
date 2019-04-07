@@ -140,6 +140,22 @@
         this.camera.Quat = [0.0, 0.0, 0.0, 1.0];
     }
 
+    Tapestry.prototype.do_resize = function(newWidth)
+    {
+        console.log("tapestry resize");
+        this.settings.width = newWidth;
+        this.settings.height = newHeight;
+
+        $(this.element).attr("width", this.settings.width);
+        $(this.element).attr("height", this.settings.height);
+
+        $(this.element).css("width", this.settings.width.toString() + "px");
+        $(this.element).css("height", this.settings.height.toString() + "px");
+
+        this.setup_tiles();
+        this.render(0);
+    }
+
     /**
      * Sets up the camera with a specific position and up vector, defaults are used if the parameters are undefined
      * @param {array} position - Four element array of floats representing the position [x, y, z, w]
